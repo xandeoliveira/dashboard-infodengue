@@ -58,14 +58,14 @@ def get_monthly_cases(city, interval):
     return df_months
 
 # Exemplo de uso
-interval = (1, 2014, 40, 2024)
-city = "Redenção"
+interval = (1, 2014, 40, 2025)
+city = "Acarape"
 monthly_data = get_monthly_cases(city, interval)
 print(monthly_data)
 
 #organizando os casos por ano
 
-arq = 'C:\\Users\\Ivina\\Desktop\\LTSM-bolsa\\acarape.csv'
+arq = 'C:\\Users\\Ivina\\Desktop\\LTSM-bolsa\\redenção.csv'
 df=pd.read_csv(arq)
 
 # Separar "Mês/Ano" em colunas separadas para "Mês" e "Ano"
@@ -75,6 +75,6 @@ df['Ano'] = df['Ano'].astype(int)
 data_sorted = df.sort_values(by=['Ano', 'Mês'])
 
 data_sorted = data_sorted[['Ano', 'Mês', 'Casos']]
-caminho = 'C:\\Users\\Ivina\\Desktop\\LTSM-bolsa\\acarape_sorted.csv'
+caminho = 'C:\\Users\\Ivina\\Desktop\\LTSM-bolsa\\redenção_sorted.csv'
 data_sorted.to_csv(caminho, index=False)
 
