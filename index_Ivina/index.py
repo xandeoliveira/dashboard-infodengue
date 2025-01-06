@@ -46,7 +46,7 @@ if city == "Acarape":
     
 
 if city == "Redenção":
-    data_redencao = pd.read_csv("C:\\Users\\Ivina\\Desktop\\LTSM-bolsa\\redenção_sorted.csv") 
+    data_redencao = pd.read_csv("redencao_sorted.csv") 
     
     st.write(f"Você selecionou: {city}")
     #st.text("Defina a série temporal:")
