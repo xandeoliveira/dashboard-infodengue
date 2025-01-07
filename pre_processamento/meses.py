@@ -1,80 +1,101 @@
 import pandas as pd
 import numpy as np
+import os
 
 def request_city_info(geocode, ws, we, ys, ye):
-    URL = "https://info.dengue.mat.br/api/alertcity"
-    params = (
-        "&disease=dengue&geocode=" + f"{geocode}"
-        + "&disease=dengue&format=csv"
-        + "&ew_start=" + f"{ws}" + "&ew_end=" + f"{we}"
-        + "&ey_start=" + f"{ys}" + "&ey_end=" + f"{ye}"
-    )
+  URL = "https://info.dengue.mat.br/api/alertcity"
+  params = (
+    "&disease=dengue&geocode=" + f"{geocode}"
+    + "&disease=dengue&format=csv"
+    + "&ew_start=" + f"{ws}" + "&ew_end=" + f"{we}"
+    + "&ey_start=" + f"{ys}" + "&ey_end=" + f"{ye}"
+  )
 
-    url_resp = "?".join([URL, params])
-    info = pd.read_csv(url_resp, index_col='SE')
+  url_resp = "?".join([URL, params])
+  info = pd.read_csv(url_resp, index_col='SE')
 
-    return info
+  return info
 
 def get_city_info(city, interval):
-    code = {
-        "Acarape": 2300150,
-        "Redenção": 2311603
-    }
-    ws, ys, we, ye = interval
+  code = {
+    "Acarape": 2300150,
+    "Redenção": 2311603
+  }
+  ws, ys, we, ye = interval
 
-    city_info = request_city_info(code[city], ws, we, ys, ye)
-    return city_info
+  city_info = request_city_info(code[city], ws, we, ys, ye)
+  city_info.drop(columns=['casos_est','casos_est_min','casos_est_max',
+                          'Localidade_id','id','versao_modelo','tweet',
+                          'casprov','casprov_est','casprov_est_min',
+                          'casprov_est_max','casconf'], inplace=True)
+  return city_info
 
-def get_monthly_cases(city, interval):
-    # Obtenção da informação por cidade e filtrando data e casos
-    df = get_city_info(city, interval)
-    df = df[['data_iniSE', 'casos']]
+def get_main_indexes(df):
+  # data_iniSE no formato YYYY-MM-DD, convertendo para MM-YYYY
+  df = df[['data_iniSE']]
+  dates = list()
 
-    # Listas para formar o dataframe para valores mensais
-    months = list()
-    month_cases = list()
+  for date in df.loc[:, 'data_iniSE']:
+    dates.append(date[:7])
 
-    # data_iniSE no formato YYYY-MM-DD, convertendo para MM/YYYY
-    for date in df.loc[:, 'data_iniSE']:
-        year, month, _ = date.split("-")
-        months.append(f"{month}/{year}")
+  df.loc[:, 'data_iniSE'] = dates
 
-    df.loc[:, 'data_iniSE'] = months
+  return dates
 
-    # Somando os casos para um mesmo mês
-    unique_months = np.unique(months)
-    for month in unique_months:
-        weeks = df[df['data_iniSE'] == month]
-        month_cases.append(weeks['casos'].sum())
+def get_monthly_cases(df, main_indexes, unique_indexes):
+  # Somando os casos para um mesmo mês
+  df = df[['data_iniSE','casos']]
+  month_cases = list()
 
-    # Criando o DataFrame com o formato desejado
-    dict_months = {"Mês/Ano": unique_months, "Casos": month_cases}
-    df_months = pd.DataFrame(dict_months)
+  for month in unique_indexes:
+    weeks = df[df['data_iniSE'] == month]
+    month_cases.append(weeks['casos'].sum())
 
-    # Salvando o DataFrame em CSV
-    df_months.to_csv(f'{city}_monthly_cases.csv', index=False)
-    print(f'Dados mensais salvos em {city}_monthly_cases.csv')
+  return month_cases
 
-    return df_months
+def get_monthly_dataframe(data_array):
+  # Criando o DataFrame com o formato desejado
+  df_monthly_cases = pd.DataFrame(data=data_array)
+  df_monthly_cases.set_index('Index', inplace=True)
+  df_monthly_cases.index.name = None
 
-# Exemplo de uso
-interval = (1, 2014, 40, 2025)
+  return df_monthly_cases
+
+# def get_monthly_temp(df, main_indexes, unique_indexes):
+#     # Somando os casos para um mesmo mês
+#   df = df[['data_iniSE','tempmin','tempmed','tempmax']]
+#   tempmin = list()
+#   tempmed = list()
+#   tempmax = list()
+
+#   for month in unique_indexes:
+#     weeks = df[df['data_iniSE'] == month]
+#     tempmin.append(weeks['tempmin'].sum() / len(weeks['tempmin']))
+#     tempmed.append(weeks['tempmed'].sum() / len(weeks['tempmed']))
+#     tempmax.append(weeks['tempmax'].sum() / len(weeks['tempmax']))
+
+#   return tempmin, tempmed, tempmax
+
+interval = (1, 2024, 53, 2024)
 city = "Acarape"
-monthly_data = get_monthly_cases(city, interval)
-print(monthly_data)
 
-#organizando os casos por ano
+df_main = get_city_info(city, interval)
+main_indexes = get_main_indexes(df_main)
+unique_indexes = np.unique(main_indexes)
 
-arq = 'C:\\Users\\Ivina\\Desktop\\LTSM-bolsa\\redenção.csv'
-df=pd.read_csv(arq)
+years = np.reshape( np.array([date[:4] for date in unique_indexes]), -1 )
+months = np.reshape( np.array([date[5:7] for date in unique_indexes]), -1 )
+monthly_data = {
+    'Index': unique_indexes,
+    'Ano': years,
+    'Mês': months,
+    'Casos': get_monthly_cases(df_main, main_indexes, unique_indexes)
+}
 
-# Separar "Mês/Ano" em colunas separadas para "Mês" e "Ano"
-df[['Mês', 'Ano']] = df['Mês/Ano'].str.split('/', expand=True)
+df_preprocessed = get_monthly_dataframe(monthly_data)
 
-df['Ano'] = df['Ano'].astype(int)
-data_sorted = df.sort_values(by=['Ano', 'Mês'])
+# # Salvando o dataframe
+# separador = '\\' if os.name == 'nt' else '/'
+# caminho = f'{os.getcwd()}{separador}{city}_monthly.csv'
 
-data_sorted = data_sorted[['Ano', 'Mês', 'Casos']]
-caminho = 'C:\\Users\\Ivina\\Desktop\\LTSM-bolsa\\redenção_sorted.csv'
-data_sorted.to_csv(caminho, index=False)
-
+# df_preprocessed.to_csv(caminho, index=False)
