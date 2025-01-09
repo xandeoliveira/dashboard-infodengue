@@ -123,13 +123,13 @@ def get_additional_stats(df, unique_indexes):
 def get_monthly_dataframe(data_array):
     # Criando o DataFrame com o formato desejado
     df_monthly_cases = pd.DataFrame(data=data_array)
-    df_monthly_cases.set_index('Index', inplace=True)
-    df_monthly_cases.index.name = None
+    #df_monthly_cases.set_index('Index', inplace=True)
+    #df_monthly_cases.index.name = None
     return df_monthly_cases
 
 # PRÉ-PROCESSAMENTO PARA O INTERVALO DE EXEMPLO
 interval = (1, 2024, 53, 2024)
-city = "Acarape"
+city = "Redenção"
 
 df_main = get_city_info(city, interval)
 main_indexes = get_main_indexes(df_main)
@@ -155,6 +155,7 @@ monthly_data = {
     **additional_stats
 }
 
+
 # Verificando se monthly_data não é None
 if monthly_data:
     df_preprocessed = get_monthly_dataframe(monthly_data)
@@ -162,5 +163,7 @@ if monthly_data:
     separador = '\\' if os.name == 'nt' else '/'
     caminho = f'{os.getcwd()}{separador}{city}_monthly.csv'
     df_preprocessed.to_csv(caminho, index=False)
+    
+    print(df_main)
 else:
     print("Erro: monthly_data está vazio.")
