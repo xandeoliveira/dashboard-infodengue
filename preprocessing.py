@@ -13,7 +13,7 @@ def request_city_info(geocode, ws, we, ys, ye):
     )
 
     url_resp = "?".join([URL, params])
-    info = pd.read_csv(url_resp, index_col='SE')
+    info = pd.read_csv(url_resp)
     return info
 
 def get_city_info(city, interval):
@@ -24,11 +24,13 @@ def get_city_info(city, interval):
     ws, ys, we, ye = interval
 
     city_info = request_city_info(code[city], ws, we, ys, ye)
-    city_info.drop(columns=['casos_est','casos_est_min','casos_est_max',
+
+    se = city_info['SE']
+    city_info.drop(columns=['SE','casos_est','casos_est_min','casos_est_max',
                             'Localidade_id','id','versao_modelo','tweet',
                             'casprov','casprov_est','casprov_est_min',
                             'casprov_est_max','casconf'], inplace=True)
-    return city_info
+    return city_info, se
 
 # FUNÇÕES DE "CONVERSÃO"
 def get_main_indexes(df):
@@ -120,50 +122,46 @@ def get_additional_stats(df, unique_indexes):
     }
     return additional_stats
 
-def get_monthly_dataframe(data_array):
-    # Criando o DataFrame com o formato desejado
-    df_monthly_cases = pd.DataFrame(data=data_array)
-    #df_monthly_cases.set_index('Index', inplace=True)
-    #df_monthly_cases.index.name = None
-    return df_monthly_cases
+def save_df(df, name):
+    spacer = '\\' if os.name == 'nt' else '/'
+    caminho = f'{os.getcwd()}{spacer}datasets{spacer}{name}'
+    df.to_csv(caminho, index=False)
+
 
 # PRÉ-PROCESSAMENTO PARA O INTERVALO DE EXEMPLO
-interval = (1, 2024, 53, 2024)
-city = "Redenção"
+def preprocessing (city):
+    interval = (1, 2014, 53, 2024)
 
-df_main = get_city_info(city, interval)
-main_indexes = get_main_indexes(df_main)
+    df_main, se = get_city_info(city, interval)
+    main_indexes = get_main_indexes(df_main)
 
-df_main.loc[:, 'data_iniSE'] = main_indexes
-unique_indexes = np.unique(main_indexes)
+    df_main.loc[:, 'data_iniSE'] = main_indexes
+    unique_indexes = np.unique(main_indexes)
 
-indexes_data = {
-    'Index': unique_indexes,
-    'ano': np.reshape( np.array([date[:4] for date in unique_indexes]), -1 ),
-    'mês': np.reshape( np.array([date[5:7] for date in unique_indexes]), -1 ),
-}
+    indexes_data = {
+        'ME': unique_indexes,
+        'ano': np.reshape( np.array([date[:4] for date in unique_indexes]), -1 ),
+        'mês': np.reshape( np.array([date[5:7] for date in unique_indexes]), -1 ),
+    }
 
-monthly_temp_and_hum = get_monthly_temp_and_hum(df_main, unique_indexes)
-level_pop_and_accum = get_level_pop_and_accum(df_main, unique_indexes)
-additional_stats = get_additional_stats(df_main, unique_indexes)
+    monthly_temp_and_hum = get_monthly_temp_and_hum(df_main, unique_indexes)
+    level_pop_and_accum = get_level_pop_and_accum(df_main, unique_indexes)
+    additional_stats = get_additional_stats(df_main, unique_indexes)
 
-monthly_data = {
-    **indexes_data,
-    'casos': get_monthly_cases(df_main, unique_indexes),
-    **monthly_temp_and_hum,
-    **level_pop_and_accum,
-    **additional_stats
-}
+    monthly_data = {
+        **indexes_data,
+        'casos': get_monthly_cases(df_main, unique_indexes),
+        **monthly_temp_and_hum,
+        **level_pop_and_accum,
+        **additional_stats
+    }
 
+    df_main.loc[:, 'data_iniSE'] = se
+    df_main.rename(columns={'data_iniSE': 'SE'}, inplace=True)
+    save_df(df_main, city+"_weekly.csv")
 
-# Verificando se monthly_data não é None
-if monthly_data:
-    df_preprocessed = get_monthly_dataframe(monthly_data)
-    # SALVANDO O DATAFRAME
-    separador = '\\' if os.name == 'nt' else '/'
-    caminho = f'{os.getcwd()}{separador}{city}_monthly.csv'
-    df_preprocessed.to_csv(caminho, index=False)
-    
-    print(df_main)
-else:
-    print("Erro: monthly_data está vazio.")
+    save_df(pd.DataFrame(data=monthly_data), city+"_monthly.csv")
+
+# Finalizando o pré-processamento
+preprocessing("Redenção")
+preprocessing("Acarape")
