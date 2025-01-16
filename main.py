@@ -9,6 +9,9 @@ locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 st.sidebar.title("Infodengue")  
 city = st.sidebar.selectbox("", ["Página Inicial", "Acarape", "Redenção"])
 
+def month_format(month):
+    return f'0{month}' if month < 10 else month
+
 if city == "Página Inicial":
     st.title("Infodengue Acarape e Redenção")
     info, image = st.columns([1, 1])
@@ -17,11 +20,11 @@ if city == "Página Inicial":
     # st.image("C:\\Users\\Ivina\\Desktop\\LTSM-bolsa\\images\\Data analysis-rafiki.png", width=300)
 
 if city == "Acarape":
-    data_acarape = pd.read_csv("acarape_sorted.csv")
+    data_acarape = pd.read_csv("datasets/Acarape_monthly.csv")
     #data_acarape['data'] = pd.to_datetime(data_acarape['data'])  # Converter coluna 'data' para datetime
     st.write(f"Você selecionou: {city}")
     st.divider()
-    anos = data_acarape['Ano'].unique()
+    anos = range(2014, 2025)
     meses = range(1, 13)
     
     # Selecionar ano e mês
@@ -35,7 +38,7 @@ if city == "Acarape":
     
     # Filtrar os dados com base no ano e mês selecionados
     dados_filtrados = data_acarape[
-        (data_acarape['Ano'] == ano_selecionado) & (data_acarape['Mês'] == mes_selecionado)
+        data_acarape['ME'] == f"{ano_selecionado}-{month_format(mes_selecionado)}"
     ]
 
     if not dados_filtrados.empty:
@@ -46,12 +49,12 @@ if city == "Acarape":
     
 
 if city == "Redenção":
-    data_redencao = pd.read_csv("redencao_sorted.csv") 
+    data_redencao = pd.read_csv("datasets/Redenção_monthly.csv") 
     
     st.write(f"Você selecionou: {city}")
     #st.text("Defina a série temporal:")
     st.divider()
-    anos = data_redencao['Ano'].unique()
+    anos = range(2014, 2025)
     meses = range(1, 13)
     
     # Selecionar ano e mês
@@ -65,7 +68,7 @@ if city == "Redenção":
     
     # Filtrar os dados com base no ano e mês selecionados
     dados_filtrados = data_redencao[
-        (data_redencao['Ano'] == ano_selecionado) & (data_redencao['Mês'] == mes_selecionado)
+        data_redencao['ME'] == f"{ano_selecionado}-{month_format(mes_selecionado)}"
     ]
 
     if not dados_filtrados.empty:
