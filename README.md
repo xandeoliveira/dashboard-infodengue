@@ -1,6 +1,6 @@
 # 📊 Dashboard InfoDengue
 
-Este projeto é um dashboard desenvolvido em Python com Streamlit para visualização interativa de dados sobre casos de dengue, utilizando informações da API do InfoDengue e dados do IBGE.
+Este projeto é um dashboard desenvolvido em Python com Streamlit para visualização interativa de dados sobre casos de dengue, utilizando informações da API do InfoDengue e dados do IBGE. Pode ser acessado em [https://dashboard-infodengue.streamlit.app/](https://dashboard-infodengue.streamlit.app/).
 
 ## 📁 Estrutura do Projeto
 
