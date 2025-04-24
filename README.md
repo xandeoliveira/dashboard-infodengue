@@ -1,14 +1,58 @@
-# Dashboard de Análise de Casos de Dengue
+# 📊 Dashboard InfoDengue
 
-Este projeto implementa um dashboard interativo utilizando **Streamlit** para análise de dados relacionados aos casos de dengue nas cidades de **Acarape** e **Redenção**. O dashboard permite ao usuário selecionar um ano e um mês específicos para visualizar os dados de casos de dengue em formato de tabela.
+Este projeto é um dashboard desenvolvido em Python com Streamlit para visualização interativa de dados sobre casos de dengue, utilizando informações da API do InfoDengue e dados do IBGE.
 
-## Funcionalidades
-- O usuário pode selecionar entre duas cidades: **Acarape** ou **Redenção**.
-- Ao escolher a cidade, o dashboard exibe um conjunto de opções para selecionar o **ano** e o **mês**.
-- O dashboard filtra e exibe os dados correspondentes ao ano e mês selecionados, permitindo a visualização de tendências sazonais de dengue. (ainda não implementado)
-- Os dados são carregados a partir de arquivos CSV, cujos dados coletados são provenientes do **Infodengue** ([https://info.dengue.mat.br](https://info.dengue.mat.br)), com a possibilidade de visualização interativa dos mesmos.
+## 📁 Estrutura do Projeto
 
-## Tecnologias
-- **Python**
-- **Streamlit** (para criação do dashboard)
-- **Pandas** (para manipulação de dados)
+```
+dashboard-infodengue/
+├── datasets/           # Dados locais em CSV para análise
+├── notebooks/          # Notebooks de exploração e pré-processamento
+├── ibge.py             # Funções auxiliares relacionadas ao IBGE
+├── infodengue.py       # Funções para consumo e tratamento dos dados do InfoDengue
+├── main.py             # App principal Streamlit
+├── requirements.txt    # Dependências do projeto
+└── README.md           # Documentação do projeto
+```
+
+## 🚀 Como Executar
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/xandeoliveira/dashboard-infodengue.git
+   cd dashboard-infodengue
+   ```
+
+2. (Opcional) Crie um ambiente virtual:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # ou venv\Scripts\activate no Windows
+   ```
+
+3. Instale as dependências:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Execute o app:
+   ```bash
+   streamlit run main.py
+   ```
+
+## 🧠 Tecnologias e Bibliotecas
+
+- Python 3.x
+- Streamlit
+- Pandas
+- Matplotlib (via Jupyter)
+- API InfoDengue
+
+## 🛠️ Desenvolvimento
+
+- `infodengue.py`: coleta e tratamento dos dados de casos de dengue via API pública.
+- `ibge.py`: contém funções para obter informações os códigos municipais.
+- `main.py`: interface visual do dashboard via Streamlit.
+
+## 📄 Licença
+
+Distribuído sob a licença MIT. Veja `LICENSE` para mais detalhes.
